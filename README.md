@@ -1,4 +1,5 @@
-![Icon](./doc/icon.png)
+<img src="./doc/icon.png" width="32" height="32" alt="Icon" />
+
 
 # MSFS Sailing Physics Tool
 

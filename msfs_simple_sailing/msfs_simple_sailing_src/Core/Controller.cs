@@ -81,7 +81,7 @@ namespace msfs_simple_sail_core.Core
                         form.SetWind(windSpeed, windDir);
 
                         double speed = model.update(windSpeed, windDir);
-                        form.SetBoomDeflection(model.boomDeflectionDeg, model.jibDeflictionDeg);
+                        form.SetBoomDeflection(model.boomDeflectionDeg, model.jibDeflectionDeg);
 
                         // pause acceleration while steering
                         // only accelerate when > Groudnspeed

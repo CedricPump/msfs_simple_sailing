@@ -243,6 +243,8 @@ namespace msfs_simple_sail
             CreateDataDefinition("AILERON TRIM PCT", "percent over 100");
             CreateDataDefinition("RUDDER DEFLECTION PCT", "percent over 100");
             CreateDataDefinition("AILERON RIGHT DEFLECTION PCT", "percent over 100");
+            CreateDataDefinition("GENERAL ENG COMBUSTION:1", "Bool");
+            
 
             RegiserDefinitions();
 

@@ -20,6 +20,7 @@ namespace msfs_simple_sail_core.Core
         public int transparencyPercent { get; set; } = 0;
         public bool darkModeEnabled { get; set; } = true;
         public bool darkModeSystem { get; set; } = true;
+        public bool pauseOnSteer { get; set; } = false;
 
 
         private static Config instance = null;

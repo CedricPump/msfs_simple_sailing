@@ -70,6 +70,11 @@ namespace msfs_simple_sail_core.Core
 
                     if (plane.isInit) 
                     {
+                        if(plane.IsEngineOn) 
+                        {
+                            this.isSailUp = false;
+                        }
+
                         double windSpeed = plane.getWindTotal();
                         double windDir = plane.getRelDir();
                         double rudder = plane.AileronDefelctionPct * 100;
@@ -87,17 +92,21 @@ namespace msfs_simple_sail_core.Core
                         // only accelerate when > Groudnspeed
                         // max speed 30 knots for water stability
                         double appliedSpeed = 0;
-                        if (speed > groundspeed && speed <= 30 && Math.Abs(rudder) < 5)
+                        if (speed > groundspeed && speed <= 30)
                         {
-                            // limit acceleration 
-                            appliedSpeed = Math.Max(groundspeed + 0.03, speed);
-                            // plane.setValue("AIRSPEED TRUE RAW", appliedSpeed);
-                            plane.setValue("VELOCITY BODY Z", appliedSpeed);
+                            if (!config.pauseOnSteer || Math.Abs(rudder) < 5)
+                            {
+                                // limit acceleration 
+                                appliedSpeed = Math.Max(groundspeed + 0.03, speed);
+                                // plane.setValue("AIRSPEED TRUE RAW", appliedSpeed);
+                                plane.setValue("VELOCITY BODY Z", appliedSpeed);
+                            }
 
                         }
 
                         form.setLog($"" +
                             $"sail set: {isSailUp} \r\n" +
+                            $"engine on: {plane.IsEngineOn} \r\n" +
                             $"wind: {windSpeed,4:0.0} knots {windDir,4:0.0}° \r\n" +
                             $"[x: {plane.vX,4:0.0}, y: {plane.vY,4:0.0}, z: {plane.vZ,4:0.0}]\r\n" +
                             $"groundspeed: {groundspeed,4:0.0} knots \r\n" +
@@ -124,6 +133,10 @@ namespace msfs_simple_sail_core.Core
         { 
             this.isSailUp = isSailUp;
             this.model.SetSail(this.isSailUp);
+            if (this.isSailUp && plane.IsEngineOn) 
+            {
+                plane.setValue("GENERAL ENG COMBUSTION:1", 0);
+            }
         }
 
         public void toggleSail() 

@@ -55,7 +55,8 @@ namespace msfs_simple_sail_core.UI
                 this.Opacity = 1 - percent / 100.0;
             }
 
-            alwaysontop = true; // config.alwaysOnTop;
+            alwaysontop = config.alwaysOnTop;
+            this.checkBoxAlwaysOnTop.Checked = alwaysontop;
 
             timer1.Start();
 
@@ -65,6 +66,11 @@ namespace msfs_simple_sail_core.UI
         {
             this.IsSailSet = !IsSailSet;
             controller.setSail(IsSailSet);
+        }
+
+        public void IsSailUp(bool isSailUp)
+        {
+            this.IsSailSet = isSailUp;
         }
 
         public void setLog(string log)
@@ -250,6 +256,25 @@ namespace msfs_simple_sail_core.UI
         private void textBoxLog_TextChanged(object sender, EventArgs e)
         {
 
+        }
+
+        private void checkBoxAlwaysOnTop_CheckedChanged(object sender, EventArgs e)
+        {
+            this.alwaysontop = checkBoxAlwaysOnTop.Checked;
+            this.TopMost = this.alwaysontop;
+            var config = Config.GetInstance();
+            config.alwaysOnTop = this.alwaysontop;
+            config.Save();
+        }
+
+        private void labelTrans_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void numericUpDownTrans_ValueChanged(object sender, EventArgs e)
+        {
+            this.Opacity = (double)(1 - numericUpDownTrans.Value / 100);
         }
     }
 }

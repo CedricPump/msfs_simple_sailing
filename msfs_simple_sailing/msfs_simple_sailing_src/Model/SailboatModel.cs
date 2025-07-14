@@ -83,7 +83,14 @@ namespace msfs_simple_sailing.Model
                     double t = (relativeWindAngle - 135) / (160 - 135);
                     ratio = Lerp(0.7, 0.4, t); // Less effective downwind
                     deflection = Lerp(70.0, 85.0, t);
-                    jibDeflection = Lerp(30.0, -45.0, t); // Winged out
+                    jibDeflection = Lerp(30.0, 45.0, t); // Winged out
+                }
+                else if (relativeWindAngle < 165)
+                {
+                    double t = (relativeWindAngle - 160) / (165 - 160);
+                    ratio = 0.4;
+                    deflection = 85.0;
+                    jibDeflection = Lerp(45.0, -45.0, t); // Winged out
                 }
                 else
                 {

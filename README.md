@@ -1,4 +1,4 @@
-![Icon](.\msfs_simple_sailing\msfs_simple_sailing_src\icon.ico)
+![Icon](./doc/icon.png)
 
 # MSFS Sailing Physics Tool
 

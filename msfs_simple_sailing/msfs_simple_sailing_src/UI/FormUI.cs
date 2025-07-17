@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Drawing;
 using System.Drawing.Drawing2D;
+using System.Reactive.Joins;
 using System.Windows.Forms;
 using msfs_simple_sail_core.Core;
 using static System.Windows.Forms.VisualStyles.VisualStyleElement.StartPanel;
@@ -21,6 +22,8 @@ namespace msfs_simple_sail_core.UI
         public double WindSpeed = 0.0;
         private double boomAngle = 0.0;
         private double jibAngle = 0.0;
+        private double mainDraftPerc;
+        private double jibDraftPerc;
         private bool IsSailSet = false;
 
 
@@ -28,6 +31,9 @@ namespace msfs_simple_sail_core.UI
 
         private TimeSpan redrawTimeout = TimeSpan.FromMilliseconds(100);
         private DateTime lastDrawn = DateTime.MinValue;
+        private int portJibTrim;
+        private int mainTrim;
+        private int starJibTrim;
 
         public FormUI(Controller controller)
         {
@@ -83,6 +89,9 @@ namespace msfs_simple_sail_core.UI
             // just to check it periodically
             if (alwaysontop && !this.TopMost) this.TopMost = alwaysontop;
             this.textBoxLog.Text = this.log;
+            this.numericUpDownPortJib.Value = this.portJibTrim;
+            this.numericUpDownStarJib.Value = this.starJibTrim;
+            this.numericUpDownMainSheet.Value = this.mainTrim;
         }
 
         public void SetSpeed(double speed)
@@ -141,8 +150,8 @@ namespace msfs_simple_sail_core.UI
             float dx2 = (float)(Math.Cos(angleRad) * length * 0.73);
             float dy2 = (float)(Math.Sin(angleRad) * length * 0.73);
 
-            PointF start = new PointF(centerX + dx, centerY - dy); // tail
-            PointF end = new PointF(centerX + dx2, centerY - dy2); // arrowhead
+            PointF start = new PointF(centerX - dx, centerY - dy); // tail
+            PointF end = new PointF(centerX - dx2, centerY - dy2); // arrowhead
 
             g.DrawLine(arrowPen, start, end);
 
@@ -160,13 +169,13 @@ namespace msfs_simple_sail_core.UI
             float centerBoomY = 223;
             float centerJibX = 259;
             float centerJibY = 120;
-            double boomAngleRad = IsSailSet ? ((boomAngle - 90) * Math.PI / 180.0) : -1.5707963267948966; // adjust for canvas orientation
+            double boomAngleRad = IsSailSet ? ((-90 - boomAngle) * Math.PI / 180.0) : -1.5707963267948966; // adjust for canvas orientation
             float boomLength = 120f; // or any length you like
 
             float boomDx = (float)(Math.Cos(boomAngleRad) * boomLength);
             float boomDy = (float)(Math.Sin(boomAngleRad) * boomLength);
 
-            PointF boomEnd = new PointF(centerBoomX + boomDx, centerBoomY - boomDy); // Y flipped
+            PointF boomEnd = new PointF(centerBoomX - boomDx, centerBoomY - boomDy); // Y flipped
             g.DrawLine(boomPen, new PointF(centerBoomX, centerBoomY), boomEnd);
 
             if (IsSailSet)
@@ -189,7 +198,7 @@ namespace msfs_simple_sail_core.UI
                 float ny = boomVecX / boomLength;
 
                 // Control points offset from midpoint
-                float curvature = boomAngle == 0 ? 0f : 15f; // Change for deeper sails
+                float curvature = (float)mainDraftPerc * 15f; // Change for deeper sails
                 curvature = boomAngle > 0 ? -curvature : curvature;
                 PointF control1 = new PointF(
                     boomStart.X + boomVecX * 0.33f + nx * curvature,
@@ -205,12 +214,12 @@ namespace msfs_simple_sail_core.UI
 
                 PointF jibStart = new PointF(centerJibX, centerJibY);
                 float jibLength = 100f;
-                double jibAngleRad = (jibAngle - 90) * Math.PI / 180.0; // Convert to canvas angle
+                double jibAngleRad = (-90 - jibAngle) * Math.PI / 180.0; // Convert to canvas angle
 
                 // Compute end point of jib
                 float jibDx = (float)(Math.Cos(jibAngleRad) * jibLength);
                 float jibDy = (float)(Math.Sin(jibAngleRad) * jibLength);
-                PointF jibEnd = new PointF(centerJibX + jibDx, centerJibY - jibDy); // Y flipped
+                PointF jibEnd = new PointF(centerJibX - jibDx, centerJibY - jibDy); // Y flipped
 
                 // Midpoint
                 PointF jibMid = new PointF(
@@ -228,7 +237,7 @@ namespace msfs_simple_sail_core.UI
                 float jny = jibVecX / jibVecLen;
 
                 // Adjust curvature based on angle (deeper with larger angle)
-                float jibCurvature = jibAngle == 0 ? 0f : 10f;
+                float jibCurvature = (float)jibDraftPerc * 10f;
                 jibCurvature = jibAngle > 0 ? -jibCurvature : jibCurvature; // Flip bulge direction for starboard
 
                 // Control points
@@ -247,10 +256,19 @@ namespace msfs_simple_sail_core.UI
 
         }
 
-        internal void SetBoomDeflection(double boomDeflectionDeg, double jibDeflectionDeg)
+        internal void SetBoomDeflection(double boomDeflectionDeg = 0, double jibDeflectionDeg = 0, double mainDraft = 0, double jibDraft = 0)
         {
             this.boomAngle = boomDeflectionDeg;
             this.jibAngle = jibDeflectionDeg;
+            this.mainDraftPerc = mainDraft;
+            this.jibDraftPerc = jibDraft;
+        }
+
+        internal void SetTrims(int port = 0, int main = 0, int star = 0)
+        {
+            this.portJibTrim = port;
+            this.mainTrim = main;
+            this.starJibTrim = star;
         }
 
         private void textBoxLog_TextChanged(object sender, EventArgs e)
@@ -275,6 +293,21 @@ namespace msfs_simple_sail_core.UI
         private void numericUpDownTrans_ValueChanged(object sender, EventArgs e)
         {
             this.Opacity = (double)(1 - numericUpDownTrans.Value / 100);
+        }
+
+        private void numericUpDownPortJib_ValueChanged(object sender, EventArgs e)
+        {
+            controller.SetJibSheetPort((int) this.numericUpDownPortJib.Value);
+        }
+
+        private void numericUpDownMainSheet_ValueChanged(object sender, EventArgs e)
+        {
+            controller.SetMainSheet((int)this.numericUpDownMainSheet.Value);
+        }
+
+        private void numericUpDownStarJib_ValueChanged(object sender, EventArgs e)
+        {
+            controller.SetJibSheetStar((int)this.numericUpDownStarJib.Value);
         }
     }
 }

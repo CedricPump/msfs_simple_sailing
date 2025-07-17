@@ -39,7 +39,16 @@ namespace msfs_simple_sail_core.UI
             checkBoxAlwaysOnTop = new CheckBox();
             numericUpDownTrans = new NumericUpDown();
             labelTrans = new Label();
+            numericUpDownPortJib = new NumericUpDown();
+            labelportsheet = new Label();
+            numericUpDownMainSheet = new NumericUpDown();
+            numericUpDownStarJib = new NumericUpDown();
+            labelmain = new Label();
+            labelstarjib = new Label();
             ((System.ComponentModel.ISupportInitialize)numericUpDownTrans).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)numericUpDownPortJib).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)numericUpDownMainSheet).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)numericUpDownStarJib).BeginInit();
             SuspendLayout();
             // 
             // timer1
@@ -61,10 +70,10 @@ namespace msfs_simple_sail_core.UI
             // textBoxLog
             // 
             textBoxLog.BorderStyle = BorderStyle.FixedSingle;
-            textBoxLog.Location = new System.Drawing.Point(12, 559);
+            textBoxLog.Location = new System.Drawing.Point(12, 603);
             textBoxLog.Multiline = true;
             textBoxLog.Name = "textBoxLog";
-            textBoxLog.Size = new System.Drawing.Size(512, 139);
+            textBoxLog.Size = new System.Drawing.Size(512, 197);
             textBoxLog.TabIndex = 1;
             textBoxLog.Text = "this is \r\nmultiline\r\n";
             textBoxLog.TextChanged += textBoxLog_TextChanged;
@@ -111,11 +120,78 @@ namespace msfs_simple_sail_core.UI
             labelTrans.Text = "transparency";
             labelTrans.Click += labelTrans_Click;
             // 
+            // numericUpDownPortJib
+            // 
+            numericUpDownPortJib.BorderStyle = BorderStyle.None;
+            numericUpDownPortJib.Location = new System.Drawing.Point(12, 574);
+            numericUpDownPortJib.Name = "numericUpDownPortJib";
+            numericUpDownPortJib.ReadOnly = true;
+            numericUpDownPortJib.Size = new System.Drawing.Size(120, 19);
+            numericUpDownPortJib.TabIndex = 6;
+            numericUpDownPortJib.TextAlign = HorizontalAlignment.Right;
+            numericUpDownPortJib.ValueChanged += numericUpDownPortJib_ValueChanged;
+            // 
+            // labelportsheet
+            // 
+            labelportsheet.AutoSize = true;
+            labelportsheet.Location = new System.Drawing.Point(12, 556);
+            labelportsheet.Name = "labelportsheet";
+            labelportsheet.Size = new System.Drawing.Size(89, 15);
+            labelportsheet.TabIndex = 7;
+            labelportsheet.Text = "port jib sheet %";
+            // 
+            // numericUpDownMainSheet
+            // 
+            numericUpDownMainSheet.BorderStyle = BorderStyle.None;
+            numericUpDownMainSheet.Location = new System.Drawing.Point(204, 574);
+            numericUpDownMainSheet.Name = "numericUpDownMainSheet";
+            numericUpDownMainSheet.ReadOnly = true;
+            numericUpDownMainSheet.Size = new System.Drawing.Size(120, 19);
+            numericUpDownMainSheet.TabIndex = 8;
+            numericUpDownMainSheet.TextAlign = HorizontalAlignment.Right;
+            numericUpDownMainSheet.ValueChanged += numericUpDownMainSheet_ValueChanged;
+            // 
+            // numericUpDownStarJib
+            // 
+            numericUpDownStarJib.BorderStyle = BorderStyle.None;
+            numericUpDownStarJib.ForeColor = System.Drawing.Color.Red;
+            numericUpDownStarJib.Location = new System.Drawing.Point(404, 574);
+            numericUpDownStarJib.Name = "numericUpDownStarJib";
+            numericUpDownStarJib.ReadOnly = true;
+            numericUpDownStarJib.Size = new System.Drawing.Size(120, 19);
+            numericUpDownStarJib.TabIndex = 9;
+            numericUpDownStarJib.TextAlign = HorizontalAlignment.Right;
+            numericUpDownStarJib.ValueChanged += numericUpDownStarJib_ValueChanged;
+            // 
+            // labelmain
+            // 
+            labelmain.AutoSize = true;
+            labelmain.Location = new System.Drawing.Point(204, 556);
+            labelmain.Name = "labelmain";
+            labelmain.Size = new System.Drawing.Size(78, 15);
+            labelmain.TabIndex = 10;
+            labelmain.Text = "main sheet %";
+            // 
+            // labelstarjib
+            // 
+            labelstarjib.AutoSize = true;
+            labelstarjib.Location = new System.Drawing.Point(404, 556);
+            labelstarjib.Name = "labelstarjib";
+            labelstarjib.Size = new System.Drawing.Size(117, 15);
+            labelstarjib.TabIndex = 11;
+            labelstarjib.Text = "starboard jib sheet %";
+            // 
             // FormUI
             // 
             AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
-            ClientSize = new System.Drawing.Size(536, 708);
+            ClientSize = new System.Drawing.Size(536, 812);
+            Controls.Add(labelstarjib);
+            Controls.Add(labelmain);
+            Controls.Add(numericUpDownStarJib);
+            Controls.Add(numericUpDownMainSheet);
+            Controls.Add(labelportsheet);
+            Controls.Add(numericUpDownPortJib);
             Controls.Add(labelTrans);
             Controls.Add(numericUpDownTrans);
             Controls.Add(checkBoxAlwaysOnTop);
@@ -126,6 +202,9 @@ namespace msfs_simple_sail_core.UI
             Name = "FormUI";
             Text = "MSFS Simple Sail";
             ((System.ComponentModel.ISupportInitialize)numericUpDownTrans).EndInit();
+            ((System.ComponentModel.ISupportInitialize)numericUpDownPortJib).EndInit();
+            ((System.ComponentModel.ISupportInitialize)numericUpDownMainSheet).EndInit();
+            ((System.ComponentModel.ISupportInitialize)numericUpDownStarJib).EndInit();
             ResumeLayout(false);
             PerformLayout();
         }
@@ -138,6 +217,12 @@ namespace msfs_simple_sail_core.UI
         private CheckBox checkBoxAlwaysOnTop;
         private NumericUpDown numericUpDownTrans;
         private Label labelTrans;
+        private NumericUpDown numericUpDownPortJib;
+        private Label labelportsheet;
+        private NumericUpDown numericUpDownMainSheet;
+        private NumericUpDown numericUpDownStarJib;
+        private Label labelmain;
+        private Label labelstarjib;
     }
 
     class DrawPanel : Panel

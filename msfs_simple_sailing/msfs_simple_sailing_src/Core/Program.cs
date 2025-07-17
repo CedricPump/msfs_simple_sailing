@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using msfs_simple_sail_core.Core;
@@ -13,7 +14,7 @@ namespace msfs_simple_sail
         {
             var logFile = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "debug.log");
             var fileStream = new FileStream(logFile, FileMode.Append, FileAccess.Write);
-            var writer = new StreamWriter(fileStream) { AutoFlush = true };
+            var writer = new StreamWriter(fileStream, Encoding.UTF8) { AutoFlush = true };
             Console.SetOut(writer);
             Console.SetError(writer);
 

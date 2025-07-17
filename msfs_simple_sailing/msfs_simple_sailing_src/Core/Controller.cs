@@ -19,7 +19,7 @@ namespace msfs_simple_sail_core.Core
         {
             this.config = Config.Load();
             plane = new Plane(OnPlaneEventCallback);
-            this.model = new SailboatModel();
+            this.model = new SailboatModelV2();
         }
 
         private void OnPlaneEventCallback(PlaneEvent planeEvent)
@@ -85,8 +85,10 @@ namespace msfs_simple_sail_core.Core
                         form.SetSpeed(groundspeed);
                         form.SetWind(windSpeed, windDir);
 
-                        double speed = model.update(windSpeed, windDir);
-                        form.SetBoomDeflection(model.boomDeflectionDeg, model.jibDeflectionDeg);
+                        UpdateTrim();
+
+                        double speed = model.Update(windSpeed, windDir);
+                        form.SetBoomDeflection(model.BoomDeflectionDeg, model.JibDeflectionDeg, model.MainDraftPerc, model.JibDraftPerc);
 
                         // pause acceleration while steering
                         // only accelerate when > Groudnspeed
@@ -101,7 +103,6 @@ namespace msfs_simple_sail_core.Core
                                 // plane.setValue("AIRSPEED TRUE RAW", appliedSpeed);
                                 plane.setValue("VELOCITY BODY Z", appliedSpeed);
                             }
-
                         }
 
                         form.setLog($"" +
@@ -112,7 +113,9 @@ namespace msfs_simple_sail_core.Core
                             $"groundspeed: {groundspeed,4:0.0} knots \r\n" +
                             $"airspeedTrueRaw: {airspeedTrueRaw,4:0.0} knots \r\n" +
                             $"appliedSpeed: {appliedSpeed,4:0.0} knots \r\n" +
-                            $"trim: {trim,4:0.0}% \r\n" +
+                            $"trim: E {plane.ElevatorTrimPct*100,4:0}% A {plane.AileronTrimPct * 100,4:0}% R {plane.RudderTrimPct * 100,4:0}%\r\n" +
+                            $"sheets: main{model.MainSheetSlack,4:0}% port jib {model.PortJibSheetSlack,4:0}% starboard jib{model.StarJibSheetSlack,4:0}% \r\n" +
+                            $"performance: {model.TotalPerformance*100,4:0}%\r\n" +
                             $"rudder: {rudder,4:0.0}% \r\n");
                     }
 
@@ -143,6 +146,37 @@ namespace msfs_simple_sail_core.Core
         {
             this.isSailUp = !this.isSailUp;
             this.model.SetSail(this.isSailUp);
+        }
+
+        private void UpdateTrim() 
+        {
+            var ElevatorTrim = plane.ElevatorTrimPct * 100;
+            var AileronTrim = plane.AileronTrimPct * 100;
+            model.SetMainSheet(-ElevatorTrim);
+            if (AileronTrim > 0) {
+                // right side
+                model.SetStarJibSheet(AileronTrim);
+            } else {
+                // left side
+                model.SetPortJibSheet(-AileronTrim);
+            }
+            // Todo: losen Jibsheets if trim == 0?
+            this.form.SetTrims((int) Math.Floor(model.PortJibSheetSlack), (int)Math.Floor(model.MainSheetSlack), (int)Math.Floor(model.StarJibSheetSlack));
+        }
+
+        public void SetJibSheetPort(int jibPort) 
+        {
+            //plane.setValue("AILERON TRIM PCT", -jibPort/100);
+        }
+
+        public void SetJibSheetStar(int jibStar) 
+        {
+            //plane.setValue("AILERON TRIM PCT", jibStar/100);
+        }
+
+        public void SetMainSheet(int main) 
+        {
+            //plane.setValue("ELEVATOR TRIM PCT", main/100);
         }
     }
 }

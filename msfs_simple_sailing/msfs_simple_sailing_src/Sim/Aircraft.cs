@@ -67,6 +67,8 @@ namespace msfs_simple_sail
         public double WindY { get; private set; } = 0.0;
 
         // controls
+        public double RudderTrimPct { get; private set; } = 0.0;
+        public double ElevatorTrimPct { get; private set; } = 0.0;
         public double AileronTrimPct { get; private set; } = 0.0;
         public double RudderDefelctionPct { get; private set; } = 0.0;
         public double AileronDefelctionPct { get; private set; } = 0.0;
@@ -161,7 +163,7 @@ namespace msfs_simple_sail
 
         public double getRelDir()
         {
-            double angleRad = Math.Atan2(WindX, -WindY); // flip windX to get tailwind at 0°
+            double angleRad = Math.Atan2(-WindX, -WindY); // flip windX to get tailwind at 0°
             double angleDeg = angleRad * (180.0 / Math.PI);
 
             // Normalize to [0, 360)
@@ -241,6 +243,8 @@ namespace msfs_simple_sail
             CreateDataDefinition("AIRSPEED TRUE RAW", "knots");
 
             CreateDataDefinition("AILERON TRIM PCT", "percent over 100");
+            CreateDataDefinition("RUDDER TRIM PCT", "percent over 100");
+            CreateDataDefinition("ELEVATOR TRIM PCT", "percent over 100");
             CreateDataDefinition("RUDDER DEFLECTION PCT", "percent over 100");
             CreateDataDefinition("AILERON RIGHT DEFLECTION PCT", "percent over 100");
             CreateDataDefinition("GENERAL ENG COMBUSTION:1", "Bool");
@@ -595,6 +599,16 @@ namespace msfs_simple_sail
                             AileronTrimPct = (double)data.dwData[0];
                             break;
                         }
+                    case "RUDDER TRIM PCT":
+                        {
+                            RudderTrimPct = (double)data.dwData[0];
+                            break;
+                        }
+                    case "ELEVATOR TRIM PCT":
+                        {
+                            ElevatorTrimPct = (double)data.dwData[0];
+                            break;
+                        }
                     case "RUDDER DEFLECTION PCT":
                         {
                             RudderDefelctionPct = (double)data.dwData[0];
@@ -788,6 +802,16 @@ namespace msfs_simple_sail
                     case "AILERON TRIM PCT":
                         {
                             AileronTrimPct = (double)data.dwData[0];
+                            break;
+                        }
+                    case "RUDDER TRIM PCT":
+                        {
+                            RudderTrimPct = (double)data.dwData[0];
+                            break;
+                        }
+                    case "ELEVATOR TRIM PCT":
+                        {
+                            ElevatorTrimPct = (double)data.dwData[0];
                             break;
                         }
                     case "RUDDER DEFLECTION PCT":

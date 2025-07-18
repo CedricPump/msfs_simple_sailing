@@ -154,7 +154,7 @@ namespace msfs_simple_sail_core.UI
             // numericUpDownStarJib
             // 
             numericUpDownStarJib.BorderStyle = BorderStyle.None;
-            numericUpDownStarJib.ForeColor = System.Drawing.Color.Red;
+            numericUpDownStarJib.ForeColor = System.Drawing.SystemColors.ControlText;
             numericUpDownStarJib.Location = new System.Drawing.Point(404, 574);
             numericUpDownStarJib.Name = "numericUpDownStarJib";
             numericUpDownStarJib.ReadOnly = true;

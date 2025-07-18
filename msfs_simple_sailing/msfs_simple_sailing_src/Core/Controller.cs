@@ -105,18 +105,18 @@ namespace msfs_simple_sail_core.Core
                             }
                         }
 
-                        form.setLog($"" +
-                            $"sail set: {isSailUp} \r\n" +
-                            $"engine on: {plane.IsEngineOn} \r\n" +
-                            $"wind: {windSpeed,4:0.0} knots {windDir,4:0.0}° \r\n" +
-                            $"[x: {plane.vX,4:0.0}, y: {plane.vY,4:0.0}, z: {plane.vZ,4:0.0}]\r\n" +
-                            $"groundspeed: {groundspeed,4:0.0} knots \r\n" +
-                            $"airspeedTrueRaw: {airspeedTrueRaw,4:0.0} knots \r\n" +
-                            $"appliedSpeed: {appliedSpeed,4:0.0} knots \r\n" +
-                            $"trim: E {plane.ElevatorTrimPct*100,4:0}% A {plane.AileronTrimPct * 100,4:0}% R {plane.RudderTrimPct * 100,4:0}%\r\n" +
-                            $"sheets: main{model.MainSheetSlack,4:0}% port jib {model.PortJibSheetSlack,4:0}% starboard jib{model.StarJibSheetSlack,4:0}% \r\n" +
-                            $"performance: {model.TotalPerformance*100,4:0}%\r\n" +
-                            $"rudder: {rudder,4:0.0}% \r\n");
+                        form.setLog($"Debug:" +
+                            $"  sail set: {isSailUp} \r\n" +
+                            $"  engine on: {plane.IsEngineOn} \r\n" +
+                            $"  wind: {windSpeed,4:0.0} knots {windDir,4:0.0}° \r\n" +
+                            //$"  [x: {plane.vX,4:0.0}, y: {plane.vY,4:0.0}, z: {plane.vZ,4:0.0}]\r\n" +
+                            $"  groundspeed: {groundspeed,4:0.0} knots \r\n" +
+                            $"  airspeedTrueRaw: {airspeedTrueRaw,4:0.0} knots \r\n" +
+                            $"  appliedSpeed: {appliedSpeed,4:0.0} knots \r\n" +
+                            $"  trim: E {plane.ElevatorTrimPct*100,4:0}% A {plane.AileronTrimPct * 100,4:0}% R {plane.RudderTrimPct * 100,4:0}%\r\n" +
+                            $"  sheets: main{model.MainSheetSlack,4:0}% port jib {model.PortJibSheetSlack,4:0}% starboard jib{model.StarJibSheetSlack,4:0}% \r\n" +
+                            $"  performance: {model.TotalPerformance*100,4:0}%\r\n" +
+                            $"  rudder: {rudder,4:0.0}% \r\n");
                     }
 
                   

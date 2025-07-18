@@ -42,6 +42,8 @@ namespace msfs_simple_sail_core.UI
             InitializeComponent();
             var config = Config.GetInstance();
 
+            this.Text = "MSFS Simple Sailing " + VersionHelper.GetVersion();
+
 #pragma warning disable CA1416 // Validate platform compatibility
 #pragma warning disable WFO5001 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
             if (Application.IsDarkModeEnabled)
@@ -213,7 +215,7 @@ namespace msfs_simple_sail_core.UI
 
 
                 PointF jibStart = new PointF(centerJibX, centerJibY);
-                float jibLength = 100f;
+                float jibLength = 90f;
                 double jibAngleRad = (-90 - jibAngle) * Math.PI / 180.0; // Convert to canvas angle
 
                 // Compute end point of jib

@@ -11,7 +11,7 @@ namespace msfs_simple_sail_core.Core
 {
     internal class VersionHelper
     {
-        private const string currentVersion = "v0.2.0";
+        private const string currentVersion = "v0.2.1";
 
         public static string GetVersion() 
         {

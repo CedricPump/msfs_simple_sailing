@@ -4,6 +4,7 @@ using System.Drawing.Drawing2D;
 using System.Reactive.Joins;
 using System.Windows.Forms;
 using msfs_simple_sail_core.Core;
+using msfs_simple_sailing.Model;
 using static System.Windows.Forms.VisualStyles.VisualStyleElement.StartPanel;
 
 
@@ -113,64 +114,65 @@ namespace msfs_simple_sail_core.UI
             panelRose.Invalidate(); // Redraw the panel
         }
 
-        private void panelRose_Paint(object sender, PaintEventArgs e)
+        // depricated
+         private void panelRose_Paint(object sender, PaintEventArgs e)
         {
+            Graphics g = e.Graphics;
             Color backColor = SystemColors.Control;
             Color foreColor = SystemColors.ControlText;
-#pragma warning disable CA1416 // Validate platform compatibility
-#pragma warning disable WFO5001 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
+
+#pragma warning disable CA1416
+#pragma warning disable WFO5001
             if (Application.IsDarkModeEnabled)
             {
                 backColor = myDarkControl;
                 foreColor = Color.White;
             }
-#pragma warning restore WFO5001 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
-#pragma warning restore CA1416 // Validate platform compatibility
+#pragma warning restore WFO5001
+#pragma warning restore CA1416
 
-            Graphics g = e.Graphics;
-            // g.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.AntiAlias;
-            // g.Clear(backColor);
-            // g.DrawImage(panelRose.BackgroundImage, new Rectangle(0, 0, 512, 512));
+            DrawWindArrow(g);
+            DrawSpeedIndicators(g, foreColor);
+            DrawBoomAndMainSail(g);
+            if (IsSailSet) DrawJibSail(g);
+            DrawRudder(g);
+        }
 
-            AdjustableArrowCap bigArrow = new AdjustableArrowCap(5, 3); // width, height
-            Pen arrowPen = new Pen(Color.Blue, 5)
-            {
-                CustomEndCap = bigArrow
-            };
+        private void DrawWindArrow(Graphics g)
+        {
+            AdjustableArrowCap bigArrow = new AdjustableArrowCap(5, 3);
+            Pen arrowPen = new Pen(Color.Blue, 5) { CustomEndCap = bigArrow };
 
-            // Convert to canvas angle (0° = up, rotate clockwise)
             double windDirTo = (WindDir + 180) % 360;
             double angleRad = (windDirTo - 90) * Math.PI / 180.0;
 
-            float centerX = 256;
-            float centerY = 256;
-            float length = 256;
-
-            // Calculate start and end points so arrow pivots around center
+            float centerX = 256, centerY = 256, length = 256;
             float dx = (float)(Math.Cos(angleRad) * length * 0.928);
             float dy = (float)(Math.Sin(angleRad) * length * 0.928);
             float dx2 = (float)(Math.Cos(angleRad) * length * 0.73);
             float dy2 = (float)(Math.Sin(angleRad) * length * 0.73);
 
-            PointF start = new PointF(centerX - dx, centerY - dy); // tail
-            PointF end = new PointF(centerX - dx2, centerY - dy2); // arrowhead
-
+            PointF start = new PointF(centerX - dx, centerY - dy);
+            PointF end = new PointF(centerX - dx2, centerY - dy2);
             g.DrawLine(arrowPen, start, end);
+        }
 
-            using Font drawFontW = new Font("Arial", 16, FontStyle.Bold);
-            using Brush drawBrushW = new SolidBrush(Color.Blue);
-            g.DrawString($"{this.WindSpeed,4:0.0} knots", drawFontW, drawBrushW, 400, 0);
+        private void DrawSpeedIndicators(Graphics g, Color foreColor)
+        {
+            using Font font = new Font("Arial", 16, FontStyle.Bold);
+            using Brush windBrush = new SolidBrush(Color.Blue);
+            using Brush speedBrush = new SolidBrush(foreColor);
 
-            using Font drawFontS = new Font("Arial", 16, FontStyle.Bold);
-            using Brush drawBrushS = new SolidBrush(foreColor);
-            g.DrawString($"{this.Speed,4:0.0} knots", drawFontS, drawBrushS, 0, 0);
+            g.DrawString($"{this.WindSpeed,4:0.0} knots", font, windBrush, 400, 0);
+            g.DrawString($"{this.Speed,4:0.0} knots", font, speedBrush, 0, 0);
+        }
 
+        private void DrawBoomAndMainSail(Graphics g)
+        {
             // this.boomAngle = -45; // 45° down right
             Pen boomPen = new Pen(Color.DarkGray, 5);
             float centerBoomX = 259;
             float centerBoomY = 223;
-            float centerJibX = 259;
-            float centerJibY = 120;
             double boomAngleRad = IsSailSet ? ((-90 - boomAngle) * Math.PI / 180.0) : -1.5707963267948966; // adjust for canvas orientation
             float boomLength = 120f; // or any length you like
 
@@ -213,50 +215,120 @@ namespace msfs_simple_sail_core.UI
 
                 g.DrawBezier(sailPen, boomStart, control1, control2, boomEnd);
 
+                // draw main sheet
+                PointF mainSheetTrimAnker = new(centerBoomX, centerBoomY+130);
+                using Pen yellowPen = new(Color.Yellow, 2);
+                if (controller.model.mainSheetUnderTension)
+                {
+                    g.DrawLine(yellowPen, mainSheetTrimAnker, boomEnd);
+                }
+                else 
+                {
+                    var sag = boomAngle > 0 ? 15f : -15f;
+                    DrawSlackLine(g, yellowPen, mainSheetTrimAnker, boomEnd, sag);
+                }
+            }
+        }
 
-                PointF jibStart = new PointF(centerJibX, centerJibY);
-                float jibLength = 90f;
-                double jibAngleRad = (-90 - jibAngle) * Math.PI / 180.0; // Convert to canvas angle
+        private void DrawJibSail(Graphics g)
+        {
+            if (IsSailSet)
+            {
+                float centerBoomX = 259;
+                float centerBoomY = 223;
 
-                // Compute end point of jib
+                float centerJibX = 259, centerJibY = 120, jibLength = 90f;
+                double jibAngleRad = (-90 - jibAngle) * Math.PI / 180.0;
                 float jibDx = (float)(Math.Cos(jibAngleRad) * jibLength);
                 float jibDy = (float)(Math.Sin(jibAngleRad) * jibLength);
-                PointF jibEnd = new PointF(centerJibX - jibDx, centerJibY - jibDy); // Y flipped
+                PointF jibStart = new(centerJibX, centerJibY);
+                PointF jibEnd = new(centerJibX - jibDx, centerJibY - jibDy);
 
-                // Midpoint
-                PointF jibMid = new PointF(
-                    (centerJibX + jibEnd.X) / 2,
-                    (centerJibY + jibEnd.Y) / 2
-                );
-
-                // Direction vector
-                float jibVecX = jibEnd.X - centerJibX;
-                float jibVecY = jibEnd.Y - centerJibY;
+                float jibVecX = jibEnd.X - jibStart.X, jibVecY = jibEnd.Y - jibStart.Y;
                 float jibVecLen = (float)Math.Sqrt(jibVecX * jibVecX + jibVecY * jibVecY);
+                float nx = -jibVecY / jibVecLen, ny = jibVecX / jibVecLen;
 
-                // Normal vector
-                float jnx = -jibVecY / jibVecLen;
-                float jny = jibVecX / jibVecLen;
+                float curvature = (float)jibDraftPerc * 10f;
+                curvature = jibAngle > 0 ? -curvature : curvature;
 
-                // Adjust curvature based on angle (deeper with larger angle)
-                float jibCurvature = (float)jibDraftPerc * 10f;
-                jibCurvature = jibAngle > 0 ? -jibCurvature : jibCurvature; // Flip bulge direction for starboard
-
-                // Control points
-                PointF jibControl1 = new PointF(
-                    centerJibX + jibVecX * 0.33f + jnx * jibCurvature,
-                    centerJibY + jibVecY * 0.33f + jny * jibCurvature
+                PointF control1 = new(
+                    jibStart.X + jibVecX * 0.33f + nx * curvature,
+                    jibStart.Y + jibVecY * 0.33f + ny * curvature
                 );
-                PointF jibControl2 = new PointF(
-                    centerJibX + jibVecX * 0.66f + jnx * jibCurvature,
-                    centerJibY + jibVecY * 0.66f + jny * jibCurvature
+                PointF control2 = new(
+                    jibStart.X + jibVecX * 0.66f + nx * curvature,
+                    jibStart.Y + jibVecY * 0.66f + ny * curvature
                 );
 
-                // Draw jib sail
-                g.DrawBezier(sailPen, new PointF(centerJibX, centerJibY), jibControl1, jibControl2, jibEnd);
+                using Pen sailPen = new(Color.LightGray, 3);
+                g.DrawBezier(sailPen, jibStart, control1, control2, jibEnd);
+
+
+                // draw jisheets 
+                PointF portJibTrimAnker = new(centerBoomX - 22, centerBoomY);
+                using Pen redPen = new(Color.Red, 2);
+                if(controller.model.portJibSheetUnderTension) 
+                {
+                    g.DrawLine(redPen, portJibTrimAnker, jibEnd);
+                }
+                else
+                {
+                    DrawSlackLine(g, redPen, portJibTrimAnker, jibEnd, 12f);
+                }
+
+                PointF starJibTrimAnker = new(centerBoomX + 22, centerBoomY);
+                using Pen greenPen = new(Color.Green, 2);
+                if (controller.model.starJibSheetUnderTension)
+                {
+                    g.DrawLine(greenPen, starJibTrimAnker, jibEnd);
+                }
+                else
+                {
+                    DrawSlackLine(g, greenPen, starJibTrimAnker, jibEnd, -12);
+                }
             }
+        }
+
+        private void DrawSlackLine(Graphics g, Pen pen, PointF start, PointF end, float sagAmount = 20f)
+        {
+            float dx = end.X - start.X;
+            float dy = end.Y - start.Y;
+            float length = (float)Math.Sqrt(dx * dx + dy * dy);
+
+            // Normalize direction
+            float dirX = dx / length;
+            float dirY = dy / length;
+
+            // Perpendicular vector
+            float nx = -dirY;
+            float ny = dirX;
+
+            // Midpoint of the line
+            float midX = (start.X + end.X) / 2f;
+            float midY = (start.Y + end.Y) / 2f;
+
+            // Control points with sag
+            PointF ctrl1 = new PointF(start.X + dx * 0.33f + nx * sagAmount, start.Y + dy * 0.33f + ny * sagAmount);
+            PointF ctrl2 = new PointF(start.X + dx * 0.66f + nx * sagAmount, start.Y + dy * 0.66f + ny * sagAmount);
+
+            g.DrawBezier(pen, start, ctrl1, ctrl2, end);
+        }
+
+        private void DrawRudder(Graphics g)
+        {
+            double rudderAngle = controller.rudder * 0.45;
+            float centerRudderX = 259, centerRudderY = 402, rudderLength = 20f;
+            double rudderAngleRad = (-90 - rudderAngle) * Math.PI / 180.0;
+            float rudderDx = (float)(Math.Cos(rudderAngleRad) * rudderLength);
+            float rudderDy = (float)(Math.Sin(rudderAngleRad) * rudderLength);
+            PointF rudderStart = new(centerRudderX, centerRudderY);
+            PointF rudderEnd = new(centerRudderX - rudderDx, centerRudderY - rudderDy);
+
+            using Pen rudderPen = new(Color.LightGray, 3);
+            g.DrawLine(rudderPen, new PointF(centerRudderX, centerRudderY), rudderEnd);
 
         }
+
 
         internal void SetBoomDeflection(double boomDeflectionDeg = 0, double jibDeflectionDeg = 0, double mainDraft = 0, double jibDraft = 0)
         {
@@ -299,7 +371,7 @@ namespace msfs_simple_sail_core.UI
 
         private void numericUpDownPortJib_ValueChanged(object sender, EventArgs e)
         {
-            controller.SetJibSheetPort((int) this.numericUpDownPortJib.Value);
+            controller.SetJibSheetPort((int)this.numericUpDownPortJib.Value);
         }
 
         private void numericUpDownMainSheet_ValueChanged(object sender, EventArgs e)
@@ -311,5 +383,19 @@ namespace msfs_simple_sail_core.UI
         {
             controller.SetJibSheetStar((int)this.numericUpDownStarJib.Value);
         }
+
+        private void buttonHdgHold_Click(object sender, EventArgs e)
+        {
+            controller.setAutopilot(!controller.headingHold);
+            if (controller.headingHold)
+            {
+                buttonHdgHold.BackColor = Color.Green;
+            }
+            else
+            {
+                buttonHdgHold.BackColor = SystemColors.Control;
+            }
+        }
+
     }
 }

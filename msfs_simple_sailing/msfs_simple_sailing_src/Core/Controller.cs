@@ -11,13 +11,18 @@ namespace msfs_simple_sail_core.Core
     {
         Plane plane;
         Config config;
+        private readonly Autopilot autopilot;
         FormUI? form;
-        SailboatModel model;
+        public SailboatModel model;
         public bool isSailUp = false;
+        public bool headingHold = false;
+        public double autopilotSelectedHeading = 0.0;
+        internal double rudder;
 
         public Controller()
         {
             this.config = Config.Load();
+            this.autopilot = new Autopilot();
             plane = new Plane(OnPlaneEventCallback);
             this.model = new SailboatModelV2();
         }
@@ -77,7 +82,7 @@ namespace msfs_simple_sail_core.Core
 
                         double windSpeed = plane.getWindTotal();
                         double windDir = plane.getRelDir();
-                        double rudder = plane.AileronDefelctionPct * 100;
+                        this.rudder = plane.AileronDefelctionPct * 100;
                         double trim = plane.AileronTrimPct * 100;
                         double groundspeed = plane.vZ;
                         double airspeedTrueRaw = plane.airspeedTrueRaw;
@@ -96,7 +101,7 @@ namespace msfs_simple_sail_core.Core
                         double appliedSpeed = 0;
                         if (speed > groundspeed && speed <= 30)
                         {
-                            if (!config.pauseOnSteer || Math.Abs(rudder) < 5)
+                            if (!config.pauseOnSteer || Math.Abs(this.rudder) < 5)
                             {
                                 // limit acceleration 
                                 appliedSpeed = Math.Max(groundspeed + 0.03, speed);
@@ -114,9 +119,22 @@ namespace msfs_simple_sail_core.Core
                             $"  airspeedTrueRaw: {airspeedTrueRaw,4:0.0} knots \r\n" +
                             $"  appliedSpeed: {appliedSpeed,4:0.0} knots \r\n" +
                             $"  trim: E {plane.ElevatorTrimPct*100,4:0}% A {plane.AileronTrimPct * 100,4:0}% R {plane.RudderTrimPct * 100,4:0}%\r\n" +
-                            $"  sheets: main{model.MainSheetSlack,4:0}% port jib {model.PortJibSheetSlack,4:0}% starboard jib{model.StarJibSheetSlack,4:0}% \r\n" +
+                            $"  sheets: main{model.MainSheetUsage,4:0}% port jib {model.PortJibSheetUsage,4:0}% starboard jib{model.StarJibSheetUsage,4:0}% \r\n" +
                             $"  performance: {model.TotalPerformance*100,4:0}%\r\n" +
-                            $"  rudder: {rudder,4:0.0}% \r\n");
+                            $"  rudder: {this.rudder,4:0.0}% \r\n");
+
+                        if (headingHold)
+                        {
+                            double rudderInput = autopilot.CalculateRequiredRudder(plane.Heading);
+                            rudderInput = Math.Clamp(rudderInput, -1.0, 1.0);  // ensure rudderInput stays in range
+
+                            double aileronCommand = rudderInput * 1;
+                            aileronCommand = Math.Clamp(aileronCommand, -16000, 16000);
+
+                            // Console.WriteLine($"Rudder input: {rudderInput * 100:F1}%, Aileron command: {aileronCommand:F0}");
+
+                            plane.setValue("AILERON POSITION", aileronCommand);
+                        }
                     }
 
                   
@@ -161,7 +179,7 @@ namespace msfs_simple_sail_core.Core
                 model.SetPortJibSheet(-AileronTrim);
             }
             // Todo: losen Jibsheets if trim == 0?
-            this.form.SetTrims((int) Math.Floor(model.PortJibSheetSlack), (int)Math.Floor(model.MainSheetSlack), (int)Math.Floor(model.StarJibSheetSlack));
+            this.form.SetTrims((int) Math.Floor(model.PortJibSheetUsage), (int)Math.Floor(model.MainSheetUsage), (int)Math.Floor(model.StarJibSheetUsage));
         }
 
         public void SetJibSheetPort(int jibPort) 
@@ -178,5 +196,15 @@ namespace msfs_simple_sail_core.Core
         {
             //plane.setValue("ELEVATOR TRIM PCT", main/100);
         }
+
+        public void setAutopilot(bool enable)
+        {
+            if (enable && !headingHold)
+            {
+                autopilot.SetTargetHeading(plane.Heading);
+            }
+            headingHold = enable;
+        }
+
     }
 }

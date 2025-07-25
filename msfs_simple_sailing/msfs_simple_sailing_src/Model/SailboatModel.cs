@@ -13,11 +13,14 @@ namespace msfs_simple_sailing.Model
         public double JibDeflectionDeg { get; protected set; } = 0; // deg
         public double MainDraftPerc { get; protected set; } = 0; // %
         public double JibDraftPerc { get; protected set; } = 0; // %
-        public double MainSheetSlack { get; protected set; } = 0; // %
+        public double MainSheetUsage { get; protected set; } = 0; // %
         protected double jibSailDeflectiosn = 0; // deg
-        public double PortJibSheetSlack { get; protected set; } = 0; // %
-        public double StarJibSheetSlack { get; protected set; } = 0; // %
+        public double PortJibSheetUsage { get; protected set; } = 0; // %
+        public double StarJibSheetUsage { get; protected set; } = 0; // %
         protected double mainSailTensiton = 0; // %
+        public bool mainSheetUnderTension = false;
+        public bool starJibSheetUnderTension = false;
+        public bool portJibSheetUnderTension = false;
         protected double boomAngle = 0; // Angle from centerline, positive = starboard, negative = port
 
         public double TotalPerformance {  get; protected set; } = 0;

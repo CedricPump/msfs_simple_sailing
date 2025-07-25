@@ -45,6 +45,7 @@ namespace msfs_simple_sail_core.UI
             numericUpDownStarJib = new NumericUpDown();
             labelmain = new Label();
             labelstarjib = new Label();
+            buttonHdgHold = new Button();
             ((System.ComponentModel.ISupportInitialize)numericUpDownTrans).BeginInit();
             ((System.ComponentModel.ISupportInitialize)numericUpDownPortJib).BeginInit();
             ((System.ComponentModel.ISupportInitialize)numericUpDownMainSheet).BeginInit();
@@ -181,11 +182,24 @@ namespace msfs_simple_sail_core.UI
             labelstarjib.TabIndex = 11;
             labelstarjib.Text = "starboard jib sheet %";
             // 
+            // buttonHdgHold
+            // 
+            buttonHdgHold.FlatStyle = FlatStyle.Flat;
+            buttonHdgHold.Font = new System.Drawing.Font("Segoe UI", 7F);
+            buttonHdgHold.Location = new System.Drawing.Point(362, 12);
+            buttonHdgHold.Name = "buttonHdgHold";
+            buttonHdgHold.Size = new System.Drawing.Size(81, 23);
+            buttonHdgHold.TabIndex = 12;
+            buttonHdgHold.Text = "Heading Hold";
+            buttonHdgHold.UseVisualStyleBackColor = true;
+            buttonHdgHold.Click += buttonHdgHold_Click;
+            // 
             // FormUI
             // 
             AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
             ClientSize = new System.Drawing.Size(536, 812);
+            Controls.Add(buttonHdgHold);
             Controls.Add(labelstarjib);
             Controls.Add(labelmain);
             Controls.Add(numericUpDownStarJib);
@@ -223,6 +237,7 @@ namespace msfs_simple_sail_core.UI
         private NumericUpDown numericUpDownStarJib;
         private Label labelmain;
         private Label labelstarjib;
+        private Button buttonHdgHold;
     }
 
     class DrawPanel : Panel

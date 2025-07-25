@@ -6,7 +6,7 @@ namespace msfs_simple_sailing.Model
     internal class SailboatModelV2 : SailboatModel
     {
         private const double MaxBoomDeflection = 85.0;
-        private const double MaxJibDeflection = 60.0;
+        private const double MaxJibDeflection = 180.0;
 
         public override double Update(double windSpeed, double relativeWindDir)
         {
@@ -18,15 +18,28 @@ namespace msfs_simple_sailing.Model
             // angle from wind direction
             double freeBoomDirection = windFromPort ? 360-relativeWindDir : -relativeWindDir;
             // limit by Max Deflection
-            double limitedBoomDeflection = Math.Min(Math.Abs(freeBoomDirection), MaxBoomDeflection * MainSheetSlack / 100);
-            BoomDeflectionDeg = freeBoomDirection > 0 ? limitedBoomDeflection : -limitedBoomDeflection;
+            double limitedBoomDeflection = Math.Min(Math.Abs(freeBoomDirection), MaxBoomDeflection * MainSheetUsage / 100);
+            double sheetedBoomdeflection = MaxBoomDeflection * MainSheetUsage / 100;
+            mainSheetUnderTension = Math.Abs(freeBoomDirection) > sheetedBoomdeflection;
+            BoomDeflectionDeg = freeBoomDirection >= 0 ? limitedBoomDeflection : -limitedBoomDeflection;
             var BoomPointDeg = GetOppositeAngle(180 - BoomDeflectionDeg);
 
             // angle from wind direction
             double freeJibDirection = windFromPort ? 360 - relativeWindDir : -relativeWindDir;
             // limit by Max Deflection
-            double activeJibSheetSlack = windFromPort ? StarJibSheetSlack : PortJibSheetSlack;
+            double activeJibSheetSlack = windFromPort ? StarJibSheetUsage : PortJibSheetUsage;
             double limitedJibDeflection = Math.Min(Math.Abs(freeJibDirection), MaxJibDeflection * activeJibSheetSlack / 100);
+            if (windFromPort)
+            {
+                starJibSheetUnderTension = Math.Abs(freeJibDirection) > limitedJibDeflection;
+                portJibSheetUnderTension = false;
+            }
+            else
+            {
+                portJibSheetUnderTension = Math.Abs(freeJibDirection) > limitedJibDeflection;
+                starJibSheetUnderTension = false;
+            }
+
             JibDeflectionDeg = freeJibDirection > 0 ? limitedJibDeflection : -limitedJibDeflection;
             var JibPointDeg = GetOppositeAngle(180-JibDeflectionDeg);
 
@@ -73,23 +86,23 @@ namespace msfs_simple_sailing.Model
 
         public override void SetMainSheet(double percent)
         {
-            this.MainSheetSlack = Clamp01(percent);
+            this.MainSheetUsage = Clamp01(percent);
         }
 
         public override void SetStarJibSheet(double percent)
         {
             percent = Clamp01(percent);
-            if (percent > this.StarJibSheetSlack)
-                this.PortJibSheetSlack = 100;
-            this.StarJibSheetSlack = percent;
+            if (percent > this.StarJibSheetUsage)
+                this.PortJibSheetUsage = 100;
+            this.StarJibSheetUsage = percent;
         }
 
         public override void SetPortJibSheet(double percent)
         {
             percent = Clamp01(percent);
-            if (percent > this.PortJibSheetSlack)
-                this.StarJibSheetSlack = 100;
-            this.PortJibSheetSlack = percent;
+            if (percent > this.PortJibSheetUsage)
+                this.StarJibSheetUsage = 100;
+            this.PortJibSheetUsage = percent;
         }
 
         public override void SetSail(bool set)
